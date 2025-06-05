@@ -92,6 +92,9 @@ outer:
 			}
 			client.Chat("", "", m)
 		case e := <-client.EventCh:
+			if e == nil {
+				break
+			}
 			switch e := e.(type) {
 			case gclient.JoinedEvent:
 				if e.Kind == "failed" {

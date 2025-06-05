@@ -78,6 +78,9 @@ outer:
 		case <-terminate:
 			break outer
 		case e := <-client.EventCh:
+			if e == nil {
+				break outer
+			}
 			switch e := e.(type) {
 			case gclient.JoinedEvent:
 				switch e.Kind {
