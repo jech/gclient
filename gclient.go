@@ -401,6 +401,9 @@ func (c *Client) Join(ctx context.Context, group, username, password string) err
 func (c *Client) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if c.ws == nil {
+		return io.ErrClosedPipe
+	}
 	c.ws.WriteControl(websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 		time.Now().Add(100*time.Millisecond),
