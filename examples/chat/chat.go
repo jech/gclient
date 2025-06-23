@@ -93,7 +93,7 @@ outer:
 			client.Chat("", "", m)
 		case e := <-client.EventCh:
 			if e == nil {
-				break
+				break outer
 			}
 			switch e := e.(type) {
 			case gclient.JoinedEvent:
