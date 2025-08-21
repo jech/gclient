@@ -82,15 +82,16 @@ type Client struct {
 	EventCh chan any
 	Id      string
 
-	mu                   sync.Mutex
-	ws                   *websocket.Conn
-	httpClient           *http.Client
-	api                  *webrtc.API
-	dialer               *websocket.Dialer
-	status               *GroupStatus
-	url, group, username string
-	rtcConfiguration     *webrtc.Configuration
-	up, down             map[string]*webrtc.PeerConnection
+	mu               sync.Mutex
+	ws               *websocket.Conn
+	httpClient       *http.Client
+	api              *webrtc.API
+	dialer           *websocket.Dialer
+	status           *GroupStatus
+	statusURL        string
+	group, username  string
+	rtcConfiguration *webrtc.Configuration
+	up, down         map[string]*webrtc.PeerConnection
 }
 
 // NewClient creates a new client connection.
@@ -167,7 +168,7 @@ func getGroupStatus(ctx context.Context, group string, client *http.Client) (*Gr
 // GetGroupStatus returns the status dictionary for a group.
 // It caches values, and might therefore return a stale value.
 func (c *Client) GetGroupStatus(ctx context.Context, group string) (*GroupStatus, error) {
-	if c.url != group {
+	if c.statusURL != group {
 		if c.group != "" {
 			c.mu.Lock()
 			client := c.httpClient
@@ -176,13 +177,13 @@ func (c *Client) GetGroupStatus(ctx context.Context, group string) (*GroupStatus
 		}
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		c.url = ""
+		c.statusURL = ""
 		c.status = nil
 		status, err := getGroupStatus(ctx, group, c.httpClient)
 		if err != nil {
 			return nil, err
 		}
-		c.url = group
+		c.statusURL = group
 		c.status = status
 		return status, nil
 	}
