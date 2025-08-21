@@ -84,7 +84,7 @@ outer:
 			switch e := e.(type) {
 			case gclient.JoinedEvent:
 				switch e.Kind {
-				case "failed":
+				case "fail":
 					log.Printf("Join failed: %v", e.Value)
 					break outer
 				case "join", "change":

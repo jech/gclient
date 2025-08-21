@@ -97,7 +97,7 @@ outer:
 			}
 			switch e := e.(type) {
 			case gclient.JoinedEvent:
-				if e.Kind == "failed" {
+				if e.Kind == "fail" {
 					log.Printf("Join failed: %v", e.Value)
 					break outer
 				}
