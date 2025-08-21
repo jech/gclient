@@ -89,6 +89,7 @@ type Client struct {
 	dialer           *websocket.Dialer
 	status           *GroupStatus
 	statusURL        string
+	statusTime       time.Time
 	group, username  string
 	rtcConfiguration *webrtc.Configuration
 	up, down         map[string]*webrtc.PeerConnection
@@ -166,10 +167,11 @@ func getGroupStatus(ctx context.Context, group string, client *http.Client) (*Gr
 }
 
 // GetGroupStatus returns the status dictionary for a group.
-// It caches values, and might therefore return a stale value.
+// This might cache values for up to 60s.
 func (c *Client) GetGroupStatus(ctx context.Context, group string) (*GroupStatus, error) {
-	if c.statusURL != group {
+	if c.statusURL != group || time.Since(c.statusTime) > time.Minute {
 		if c.group != "" {
+			// joined, don't clobber the cached value
 			c.mu.Lock()
 			client := c.httpClient
 			c.mu.Unlock()
@@ -179,12 +181,14 @@ func (c *Client) GetGroupStatus(ctx context.Context, group string) (*GroupStatus
 		defer c.mu.Unlock()
 		c.statusURL = ""
 		c.status = nil
+		c.statusTime = time.Time{}
 		status, err := getGroupStatus(ctx, group, c.httpClient)
 		if err != nil {
 			return nil, err
 		}
 		c.statusURL = group
 		c.status = status
+		c.statusTime = time.Now()
 		return status, nil
 	}
 	return c.status, nil
